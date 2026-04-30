@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Grades & Results - KL ERP{% endblock %}
+{% block content %}
+<div class="page-header">Grades & Results</div>
+
+<form method="get" action="">
+<div class="filter-bar">
+  <div class="fgroup">
+    <label>Academic Year</label>
+    <select name="academic_year">
+      <option value="">Select Academic Year</option>
+      {% for y in years %}
+      <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="fgroup">
+    <label>Semester</label>
+    <select name="semester">
+      <option value="">Select Semester</option>
+      {% for s in semesters %}
+      <option value="{{ s }}" {% if s == selected_sem %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn-search">Search</button>
+  <a href="{% url 'grades' %}" class="btn-reset">Reset</a>
+</div>
+</form>
+
+{% if search_submitted %}
+  {% if records %}
+  <div class="stat-cards">
+    <div class="stat-card"><div class="val">{{ records|length }}</div><div class="lbl">Courses</div></div>
+    <div class="stat-card"><div class="val">{{ total_credits }}</div><div class="lbl">Total Credits</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--success);">{{ cgpa }}</div><div class="lbl">SGPA</div></div>
+  </div>
+  <div class="data-table-wrap">
+    <div class="tbl-header">
+      <div><div class="tbl-title">Grade Sheet</div>
+      <div class="total-badge">Total {{ records|length }} items.</div></div>
+      <button class="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+    </div>
+    <div style="overflow-x:auto;">
+    <table class="erp-table">
+      <thead>
+        <tr><th>#</th><th>Academic Year</th><th>Semester</th><th>Course Code</th>
+            <th>Course Name</th><th>Credits</th><th>Internal</th><th>External</th>
+            <th>Total</th><th>Grade</th><th>Grade Points</th></tr>
+      </thead>
+      <tbody>
+        {% for g in records %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ g.academic_year }}</td>
+          <td>{{ g.semester }}</td>
+          <td><span class="badge-code">{{ g.course_code }}</span></td>
+          <td>{{ g.course_desc }}</td>
+          <td style="text-align:center;">{{ g.credits }}</td>
+          <td style="text-align:center;">{{ g.internal_marks }}</td>
+          <td style="text-align:center;">{{ g.external_marks }}</td>
+          <td style="text-align:center;font-weight:600;">{{ g.total_marks }}</td>
+          <td>
+            {% if g.grade == 'O' %}<span class="badge-grade g-O">O</span>
+            {% elif g.grade == 'A+' %}<span class="badge-grade g-Ap">A+</span>
+            {% elif g.grade == 'A' %}<span class="badge-grade g-A">A</span>
+            {% elif g.grade == 'B+' %}<span class="badge-grade g-Bp">B+</span>
+            {% elif g.grade == 'B' %}<span class="badge-grade g-B">B</span>
+            {% else %}<span class="badge-grade g-F">{{ g.grade }}</span>{% endif %}
+          </td>
+          <td style="text-align:center;font-weight:600;">{{ g.grade_points }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-graduation-cap"></i>
+    No grades found for this selection.
+  </div>
+  {% endif %}
+{% else %}
+<div class="empty-state">
+  <i class="fas fa-graduation-cap"></i>
+  Select Academic Year and Semester to view grades.
+</div>
+{% endif %}
+{% endblock %}

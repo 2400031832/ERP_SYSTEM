@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Educational ERP Login</title>
+  <style>
+    :root{
+      --page:#222728;
+      --panel:#1c1e20;
+      --panel-line:#3c4247;
+      --text:#f3eee6;
+      --muted:#b2a694;
+      --field:#191c1e;
+      --field-line:#41484e;
+      --primary:#245fb6;
+      --primary-hover:#2d6fd1;
+      --danger:#e08375;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{min-height:100%;}
+    body{
+      min-height:100vh;
+      font-family:"Segoe UI",Arial,sans-serif;
+      background:var(--page);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:32px 18px;
+    }
+    .login-card{
+      width:min(576px,100%);
+      background:var(--panel);
+      border:1px solid var(--panel-line);
+      border-radius:16px;
+      padding:44px 35px 35px;
+      box-shadow:0 24px 60px rgba(0,0,0,.18);
+    }
+    .login-title{
+      color:var(--text);
+      font-size:2.45rem;
+      line-height:1.12;
+      font-weight:800;
+      text-align:center;
+      margin-bottom:14px;
+      letter-spacing:0;
+    }
+    .login-subtitle{
+      color:var(--muted);
+      font-size:1.17rem;
+      text-align:center;
+      margin-bottom:30px;
+    }
+    .role-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:13px 12px;
+      margin-bottom:24px;
+    }
+    .role-btn{
+      height:52px;
+      border:1px solid var(--field-line);
+      border-radius:9px;
+      background:transparent;
+      color:#d5c8b2;
+      font:inherit;
+      font-size:1.18rem;
+      cursor:pointer;
+      transition:background .18s,border-color .18s,color .18s;
+    }
+    .role-btn:hover{border-color:#63707b;color:var(--text);}
+    .role-btn.active{
+      background:var(--primary);
+      border-color:var(--primary);
+      color:#fff;
+    }
+    .field-group{margin-bottom:24px;}
+    .field-group label{
+      display:block;
+      color:var(--text);
+      font-size:1.22rem;
+      margin-bottom:10px;
+    }
+    .login-input{
+      width:100%;
+      height:53px;
+      background:var(--field);
+      border:1px solid var(--field-line);
+      border-radius:9px;
+      color:var(--text);
+      font:inherit;
+      font-size:1.05rem;
+      padding:0 14px;
+      outline:none;
+      transition:border-color .18s,box-shadow .18s;
+    }
+    .login-input:focus{
+      border-color:#5c83c7;
+      box-shadow:0 0 0 3px rgba(36,95,182,.22);
+    }
+    .login-alert{
+      border:1px solid rgba(224,131,117,.42);
+      background:rgba(224,131,117,.1);
+      color:#ffd8d2;
+      border-radius:9px;
+      padding:11px 13px;
+      margin-bottom:18px;
+      font-size:.95rem;
+    }
+    .submit-btn{
+      width:100%;
+      height:55px;
+      border:0;
+      border-radius:9px;
+      background:var(--primary);
+      color:#fff;
+      font:inherit;
+      font-size:1.22rem;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:7px;
+      transition:background .18s,transform .18s;
+    }
+    .submit-btn:hover{
+      background:var(--primary-hover);
+      transform:translateY(-1px);
+    }
+    .secondary-link{
+      display:block;
+      color:#c5bcae;
+      text-align:center;
+      margin-top:20px;
+      text-decoration:none;
+      font-size:.98rem;
+    }
+    .secondary-link:hover{color:#fff;}
+    @media (max-width:560px){
+      body{align-items:flex-start;padding-top:58px;}
+      .login-card{padding:32px 22px 26px;border-radius:14px;}
+      .login-title{font-size:2rem;}
+      .login-subtitle{font-size:1rem;}
+      .role-grid{grid-template-columns:1fr;}
+      .role-btn{height:49px;font-size:1.05rem;}
+    }
+  </style>
+</head>
+<body>
+  <main class="login-card" aria-labelledby="loginTitle">
+    <h1 class="login-title" id="loginTitle">Educational ERP Login</h1>
+    <p class="login-subtitle">Select role and sign in</p>
+
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="login-alert">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      <input type="hidden" name="role" id="selectedRole" value="Student"/>
+
+      <div class="role-grid" role="group" aria-label="Select role">
+        <button class="role-btn active" type="button" data-role="Student">Student</button>
+        <button class="role-btn" type="button" data-role="Faculty">Faculty</button>
+        <button class="role-btn" type="button" data-role="Admin">Admin</button>
+        <button class="role-btn" type="button" data-role="Administrator">Administrator</button>
+      </div>
+
+      <div class="field-group">
+        <label for="username">Username</label>
+        <input class="login-input" id="username" name="username" type="text" autocomplete="username" required/>
+      </div>
+
+      <div class="field-group">
+        <label for="password">Password</label>
+        <input class="login-input" id="password" name="password" type="password" autocomplete="current-password" required/>
+      </div>
+
+      <button class="submit-btn" type="submit" id="submitBtn">Sign In as Student</button>
+      <a class="secondary-link" href="{% url 'register' %}">Parent Registration</a>
+    </form>
+  </main>
+
+  <script>
+    const roleInput = document.getElementById('selectedRole');
+    const submitBtn = document.getElementById('submitBtn');
+
+    document.querySelectorAll('.role-btn').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.role-btn').forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        roleInput.value = button.dataset.role;
+        submitBtn.textContent = `Sign In as ${button.dataset.role}`;
+      });
+    });
+  </script>
+</body>
+</html>

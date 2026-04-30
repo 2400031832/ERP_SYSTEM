@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Home - Educational ERP{% endblock %}
+{% block content %}
+<div class="page-header">Dashboard</div>
+<div style="font-size:1.18rem;font-weight:700;color:var(--muted);margin-bottom:26px;">
+  Welcome <span style="color:var(--text);">{{ user.get_full_name|default:user.username }}</span>
+</div>
+<div class="cards-grid">
+  <a href="{% url 'attendance' %}" class="dash-card">
+    <div class="icon-circle bg-blue"><i class="fas fa-clipboard-list"></i></div>
+    <span class="card-label">Attendance Register</span>
+    <span class="badge-count">{{ attendance_count }}</span>
+  </a>
+  <a href="{% url 'courses' %}" class="dash-card">
+    <div class="icon-circle bg-cyan"><i class="fas fa-book-open"></i></div>
+    <span class="card-label">My Courses</span>
+    <span class="badge-count">{{ courses_count }}</span>
+  </a>
+  <a href="{% url 'course_internals' %}" class="dash-card">
+    <div class="icon-circle bg-green"><i class="fas fa-tasks"></i></div>
+    <span class="card-label">Course Internals</span>
+    <span class="badge-count">{{ courses_count }}</span>
+  </a>
+  <a href="{% url 'grades' %}" class="dash-card">
+    <div class="icon-circle bg-purple"><i class="fas fa-graduation-cap"></i></div>
+    <span class="card-label">Grades & Results</span>
+    <span class="badge-count">{{ grades_count }}</span>
+  </a>
+</div>
+{% endblock %}

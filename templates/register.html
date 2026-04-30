@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parent Registration - Educational ERP</title>
+  <style>
+    :root{
+      --page:#222728;
+      --panel:#1c1e20;
+      --panel-line:#3c4247;
+      --text:#f3eee6;
+      --muted:#b2a694;
+      --field:#191c1e;
+      --field-line:#41484e;
+      --primary:#245fb6;
+      --primary-hover:#2d6fd1;
+      --danger:#e08375;
+      --success:#8cc99f;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{min-height:100%;}
+    body{
+      min-height:100vh;
+      font-family:"Segoe UI",Arial,sans-serif;
+      background:var(--page);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:32px 18px;
+    }
+    .register-card{
+      width:min(780px,100%);
+      background:var(--panel);
+      border:1px solid var(--panel-line);
+      border-radius:16px;
+      padding:42px 35px 35px;
+      box-shadow:0 24px 60px rgba(0,0,0,.18);
+    }
+    .register-title{
+      color:var(--text);
+      font-size:2.35rem;
+      line-height:1.12;
+      font-weight:800;
+      text-align:center;
+      margin-bottom:12px;
+      letter-spacing:0;
+    }
+    .register-subtitle{
+      color:var(--muted);
+      font-size:1.12rem;
+      text-align:center;
+      margin-bottom:30px;
+    }
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:20px 14px;
+    }
+    .field-group{min-width:0;}
+    .field-group.full{grid-column:1 / -1;}
+    .field-group label{
+      display:block;
+      color:var(--text);
+      font-size:1.06rem;
+      margin-bottom:9px;
+    }
+    .form-input,
+    .form-select{
+      width:100%;
+      height:52px;
+      background:var(--field);
+      border:1px solid var(--field-line);
+      border-radius:9px;
+      color:var(--text);
+      font:inherit;
+      font-size:1rem;
+      padding:0 14px;
+      outline:none;
+      transition:border-color .18s,box-shadow .18s;
+    }
+    .form-input:focus,
+    .form-select:focus{
+      border-color:#5c83c7;
+      box-shadow:0 0 0 3px rgba(36,95,182,.22);
+    }
+    .form-select{
+      appearance:none;
+      background-image:linear-gradient(45deg,transparent 50%,#c5bcae 50%),linear-gradient(135deg,#c5bcae 50%,transparent 50%);
+      background-position:calc(100% - 18px) 22px,calc(100% - 12px) 22px;
+      background-size:6px 6px,6px 6px;
+      background-repeat:no-repeat;
+    }
+    .form-select option{
+      background:#1c1e20;
+      color:var(--text);
+    }
+    .register-alert{
+      border:1px solid rgba(224,131,117,.42);
+      background:rgba(224,131,117,.1);
+      color:#ffd8d2;
+      border-radius:9px;
+      padding:11px 13px;
+      margin-bottom:18px;
+      font-size:.95rem;
+    }
+    .register-alert.success{
+      border-color:rgba(140,201,159,.42);
+      background:rgba(140,201,159,.1);
+      color:#dcffe6;
+    }
+    .button-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:28px;
+    }
+    .submit-btn,
+    .back-btn{
+      width:100%;
+      height:55px;
+      border-radius:9px;
+      font:inherit;
+      font-size:1.1rem;
+      font-weight:700;
+      cursor:pointer;
+      text-align:center;
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:background .18s,border-color .18s,transform .18s,color .18s;
+    }
+    .submit-btn{
+      border:0;
+      background:var(--primary);
+      color:#fff;
+    }
+    .submit-btn:hover{
+      background:var(--primary-hover);
+      transform:translateY(-1px);
+    }
+    .back-btn{
+      border:1px solid var(--field-line);
+      background:transparent;
+      color:#d5c8b2;
+    }
+    .back-btn:hover{
+      border-color:#63707b;
+      color:#fff;
+      transform:translateY(-1px);
+    }
+    @media (max-width:680px){
+      body{align-items:flex-start;padding-top:28px;}
+      .register-card{padding:32px 22px 26px;border-radius:14px;}
+      .register-title{font-size:2rem;}
+      .register-subtitle{font-size:1rem;}
+      .form-grid,.button-row{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+  <main class="register-card" aria-labelledby="registerTitle">
+    <h1 class="register-title" id="registerTitle">Parent Registration</h1>
+    <p class="register-subtitle">Create student access for the Educational ERP</p>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="register-alert {% if message.tags == 'success' %}success{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="form-grid">
+        <div class="field-group">
+          <label for="first_name">First Name *</label>
+          <input class="form-input" id="first_name" type="text" name="first_name" autocomplete="given-name" required>
+        </div>
+
+        <div class="field-group">
+          <label for="last_name">Last Name *</label>
+          <input class="form-input" id="last_name" type="text" name="last_name" autocomplete="family-name" required>
+        </div>
+
+        <div class="field-group full">
+          <label for="email">Email *</label>
+          <input class="form-input" id="email" type="email" name="email" autocomplete="email" required>
+        </div>
+
+        <div class="field-group">
+          <label for="password">Password *</label>
+          <input class="form-input" id="password" type="password" name="password" autocomplete="new-password" required>
+        </div>
+
+        <div class="field-group">
+          <label for="password2">Confirm Password *</label>
+          <input class="form-input" id="password2" type="password" name="password2" autocomplete="new-password" required>
+        </div>
+
+        <div class="field-group">
+          <label for="roll_number">Roll Number *</label>
+          <input class="form-input" id="roll_number" type="text" name="roll_number" required>
+        </div>
+
+        <div class="field-group">
+          <label for="registration_number">Registration Number *</label>
+          <input class="form-input" id="registration_number" type="text" name="registration_number" required>
+        </div>
+
+        <div class="field-group">
+          <label for="phone">Phone *</label>
+          <input class="form-input" id="phone" type="tel" name="phone" autocomplete="tel" required>
+        </div>
+
+        <div class="field-group">
+          <label for="date_of_birth">Date of Birth *</label>
+          <input class="form-input" id="date_of_birth" type="date" name="date_of_birth" required>
+        </div>
+
+        <div class="field-group full">
+          <label for="address">Address *</label>
+          <input class="form-input" id="address" type="text" name="address" autocomplete="street-address" required>
+        </div>
+
+        <div class="field-group">
+          <label for="department">Department *</label>
+          <select class="form-select" id="department" name="department" required>
+            <option value="">Select</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Mechanical">Mechanical</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="year">Year *</label>
+          <input class="form-input" id="year" type="number" name="year" min="1" max="4" required>
+        </div>
+
+        <div class="field-group">
+          <label for="semester">Semester *</label>
+          <input class="form-input" id="semester" type="number" name="semester" min="1" max="8" required>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <a class="back-btn" href="{% url 'login' %}">Back to Login</a>
+        <button class="submit-btn" type="submit">Register Parent</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

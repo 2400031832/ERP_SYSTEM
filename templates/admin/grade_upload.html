@@ -1,0 +1,59 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<style>
+  :root{
+    --page:#222728;
+    --panel:#1c1e20;
+    --panel-line:#3c4247;
+    --text:#f3eee6;
+    --muted:#b2a694;
+    --field:#191c1e;
+    --field-line:#41484e;
+    --primary:#245fb6;
+  }
+  #content{background:var(--page);color:var(--text);padding:28px;}
+  .upload-panel{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:16px;
+    padding:22px;
+    margin-bottom:20px;
+    box-shadow:0 24px 60px rgba(0,0,0,.18);
+  }
+  .upload-panel code,.upload-panel pre{color:#dce8ff;background:#263244;border-radius:8px;padding:8px;display:block;}
+  .upload-panel label{color:var(--muted);font-weight:800;text-transform:uppercase;font-size:.78rem;letter-spacing:.06em;}
+  .upload-panel input{background:var(--field);border:1px solid var(--field-line);border-radius:9px;color:var(--text);padding:10px;}
+  .upload-btn{background:var(--primary);color:#fff;padding:10px 20px;border:none;border-radius:9px;cursor:pointer;font-weight:800;}
+  .cancel-link{margin-left:16px;color:#d5c8b2!important;}
+</style>
+<h2 style="color:var(--text);font-weight:800;">Upload Internal Marks via CSV</h2>
+
+<div class="upload-panel">
+  <b>CSV Format (first row must be header):</b><br>
+  <code>roll_number,course_code,internal_marks,academic_year,semester</code><br><br>
+  <b>Sample:</b><br>
+  <pre style="margin:0;">{{ sample }}</pre>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="upload-panel">
+  {% csrf_token %}
+  <div style="margin-bottom:16px;">
+    <label style="display:block;margin-bottom:8px;">Select CSV File:</label>
+    <input type="file" name="csv_file" accept=".csv" required>
+  </div>
+  <button type="submit" class="upload-btn">
+    Upload & Update Marks
+  </button>
+  <a href=".." class="cancel-link">Cancel</a>
+</form>
+
+<div class="upload-panel">
+  <b>Notes:</b>
+  <ul style="margin:8px 0 0 20px;">
+    <li>academic_year and semester columns are optional (defaults: 2025-2026, Odd Sem)</li>
+    <li>If grade record exists, only internal_marks will be updated</li>
+    <li>If grade record does not exist, a new one will be created</li>
+    <li>total_marks is auto-calculated as internal + external</li>
+  </ul>
+</div>
+{% endblock %}

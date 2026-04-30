@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Educational ERP{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    :root{
+      --page:#222728;
+      --panel:#1c1e20;
+      --panel-2:#191c1e;
+      --panel-line:#3c4247;
+      --text:#f3eee6;
+      --muted:#b2a694;
+      --field:#191c1e;
+      --field-line:#41484e;
+      --primary:#245fb6;
+      --primary-hover:#2d6fd1;
+      --success:#8cc99f;
+      --warning:#e7c46b;
+      --danger:#e08375;
+      --shadow:0 24px 60px rgba(0,0,0,.18);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{min-height:100%;}
+    body{
+      font-family:"Segoe UI",Arial,sans-serif;
+      background:var(--page);
+      color:var(--text);
+      min-height:100vh;
+    }
+    a{transition:color .18s,background .18s,border-color .18s,transform .18s;text-decoration:none;}
+
+    .top-navbar{
+      height:68px;
+      background:#344054;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      gap:18px;
+      padding:0 28px;
+      position:fixed;
+      top:0;
+      left:300px;
+      right:0;
+      z-index:1000;
+    }
+    .hamburger,.icon-btn{
+      width:40px;
+      height:40px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:9px;
+      background:#263244;
+      color:var(--text);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+    }
+    .hamburger:hover,.icon-btn:hover{background:var(--primary);}
+    .icon-btn{position:relative;}
+    .icon-btn:after{
+      content:"3";
+      position:absolute;
+      right:-5px;
+      top:-6px;
+      background:var(--danger);
+      color:#241819;
+      font-size:.68rem;
+      font-weight:800;
+      border-radius:999px;
+      padding:1px 6px;
+    }
+    .top-meta{
+      color:var(--text);
+      font-weight:800;
+      line-height:1.2;
+      min-width:280px;
+    }
+    .top-meta span{
+      display:block;
+      color:var(--muted);
+      font-size:.74rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      font-weight:700;
+    }
+    .search-wrap{flex:1;max-width:390px;position:relative;margin-left:auto;}
+    .search-wrap input{
+      width:100%;
+      height:42px;
+      background:#263244;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:9px;
+      color:var(--text);
+      outline:none;
+      padding:0 14px 0 43px;
+    }
+    .search-wrap input::placeholder{color:#aab3bf;}
+    .search-wrap input:focus{border-color:#5c83c7;box-shadow:0 0 0 3px rgba(36,95,182,.22);}
+    .search-wrap i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);}
+    .nav-right{display:flex;align-items:center;gap:12px;margin-left:auto;}
+    .user-chip{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:9px;
+      background:#263244;
+      color:var(--text);
+      padding:5px 12px 5px 6px;
+      font-weight:800;
+    }
+    .avatar{
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      background:var(--primary);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+    }
+
+    .sidebar{
+      position:fixed;
+      top:0;
+      left:0;
+      bottom:0;
+      width:300px;
+      background:var(--panel);
+      border-right:1px solid var(--panel-line);
+      overflow-y:auto;
+      z-index:1001;
+      padding:22px 18px;
+      transition:transform .25s;
+    }
+    .sidebar::-webkit-scrollbar{width:6px;}
+    .sidebar::-webkit-scrollbar-thumb{background:#454c52;border-radius:8px;}
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:13px;
+      padding:0 10px 22px;
+      margin-bottom:16px;
+      border-bottom:1px solid var(--panel-line);
+      color:var(--text);
+    }
+    .brand:before{
+      content:"\f19d";
+      font-family:"Font Awesome 6 Free";
+      font-weight:900;
+      width:46px;
+      height:46px;
+      border-radius:10px;
+      background:var(--primary);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+    }
+    .brand .logo-text{font-size:1.15rem;font-weight:800;color:var(--text);line-height:1.05;}
+    .brand .logo-text:after{
+      content:"EDUCATIONAL ERP";
+      display:block;
+      color:var(--muted);
+      font-size:.66rem;
+      letter-spacing:.08em;
+      font-weight:700;
+      margin-top:5px;
+    }
+    .section-sep{
+      color:var(--muted);
+      font-size:.72rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      font-weight:800;
+      padding:18px 10px 9px;
+    }
+    .nav-link-item{
+      display:flex;
+      align-items:center;
+      gap:13px;
+      min-height:44px;
+      color:#d5c8b2;
+      border:1px solid transparent;
+      border-radius:9px;
+      padding:10px 12px;
+      margin-bottom:6px;
+      font-size:1rem;
+    }
+    .nav-link-item:hover,.nav-link-item.active{
+      background:var(--primary);
+      border-color:var(--primary);
+      color:#fff;
+    }
+    .nav-link-item i{width:20px;text-align:center;}
+    .nav-link-item .arrow{margin-left:auto;font-size:.7rem;}
+    .nav-link-item.open .arrow{transform:rotate(90deg);}
+    .sub-menu{
+      display:none;
+      background:var(--panel-2);
+      border:1px solid var(--panel-line);
+      border-radius:9px;
+      padding:6px;
+      margin:2px 0 8px;
+    }
+    .sub-menu.open{display:block;}
+    .sub-link{
+      display:flex;
+      align-items:center;
+      color:#d5c8b2;
+      border-radius:8px;
+      padding:9px 12px 9px 38px;
+      font-size:.88rem;
+    }
+    .sub-link:hover,.sub-link.active{background:#263244;color:#fff;}
+
+    .main-content{
+      margin-left:300px;
+      margin-top:68px;
+      padding:38px;
+      min-height:calc(100vh - 108px);
+    }
+    .page-header{
+      color:var(--text);
+      font-size:2.15rem;
+      line-height:1.15;
+      font-weight:800;
+      margin-bottom:24px;
+    }
+    .page-header:before{
+      content:"Educational ERP";
+      display:block;
+      color:var(--muted);
+      font-size:.84rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+    .page-header:after{
+      content:"Overview of academic activity, courses, attendance and student records.";
+      display:block;
+      color:var(--muted);
+      font-size:1rem;
+      font-weight:400;
+      margin-top:8px;
+    }
+
+    .filter-bar,.data-table-wrap,.stat-card,.dash-card,.card,.modal-panel,.student-detail-box{
+      background:var(--panel);
+      border:1px solid var(--panel-line);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+    }
+    .filter-bar{
+      display:flex;
+      align-items:flex-end;
+      gap:14px;
+      flex-wrap:wrap;
+      padding:20px;
+      margin-bottom:24px;
+    }
+    .filter-bar .fgroup{display:flex;flex-direction:column;gap:8px;}
+    .filter-bar label,.form-label{
+      color:var(--muted);
+      font-size:.76rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .filter-bar select,.filter-bar input,.form-control,select.form-control,input.form-control{
+      min-width:170px;
+      min-height:44px;
+      background:var(--field);
+      border:1px solid var(--field-line);
+      border-radius:9px;
+      color:var(--text);
+      outline:none;
+      padding:10px 12px;
+      font-size:.92rem;
+    }
+    .filter-bar select:focus,.filter-bar input:focus,.form-control:focus{
+      background:var(--field);
+      color:var(--text);
+      border-color:#5c83c7;
+      box-shadow:0 0 0 3px rgba(36,95,182,.22);
+    }
+    .form-control::placeholder{color:#908879;}
+    select.form-control option,.filter-bar select option{background:var(--panel);color:var(--text);}
+
+    .btn-search,.btn-reset,.btn-print,.btn,.action-link{
+      border-radius:9px!important;
+      font-weight:800!important;
+      text-decoration:none!important;
+      min-height:42px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+    }
+    .btn-search,.btn-success,.btn-info,.action-primary{
+      background:var(--primary)!important;
+      color:#fff!important;
+      border:1px solid var(--primary)!important;
+      padding:10px 18px;
+    }
+    .btn-search:hover,.btn-success:hover,.btn-info:hover,.action-primary:hover{background:var(--primary-hover)!important;border-color:var(--primary-hover)!important;transform:translateY(-1px);}
+    .btn-reset,.btn-print,.btn-warning{
+      background:transparent!important;
+      color:#d5c8b2!important;
+      border:1px solid var(--field-line)!important;
+      padding:10px 16px;
+    }
+    .btn-reset:hover,.btn-print:hover,.btn-warning:hover{border-color:#63707b!important;color:#fff!important;transform:translateY(-1px);}
+    .btn-danger{background:var(--danger)!important;border:1px solid var(--danger)!important;color:#241819!important;}
+
+    .data-table-wrap{overflow:hidden;}
+    .data-table-wrap .tbl-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:18px 20px;
+      border-bottom:1px solid var(--panel-line);
+    }
+    .tbl-title,.card-title{color:var(--text);font-size:1.08rem;font-weight:800;}
+    .total-badge{color:var(--muted);font-size:.86rem;margin-top:3px;}
+    table.erp-table,.table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      color:var(--text);
+      margin-bottom:0;
+    }
+    table.erp-table thead tr,.table thead tr{
+      background:#263244;
+      color:var(--text);
+    }
+    table.erp-table th,.table th{
+      padding:13px 14px;
+      font-size:.78rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      border-color:var(--panel-line)!important;
+      white-space:nowrap;
+    }
+    table.erp-table td,.table td{
+      padding:13px 14px;
+      color:#e9dfd1;
+      border-color:var(--panel-line)!important;
+      vertical-align:middle;
+      font-size:.9rem;
+    }
+    table.erp-table tbody tr:nth-child(even),.table-striped>tbody>tr:nth-of-type(odd)>*{background:#202427;color:#e9dfd1;}
+    table.erp-table tbody tr:hover,.table tbody tr:hover{background:#263244;}
+    .table-dark,.table-secondary{--bs-table-bg:#263244;--bs-table-color:var(--text);--bs-table-border-color:var(--panel-line);}
+
+    .badge-code{
+      background:#263244;
+      color:#dce8ff;
+      border:1px solid #405579;
+      padding:5px 9px;
+      border-radius:8px;
+      font-size:.78rem;
+      font-weight:800;
+      display:inline-block;
+    }
+    .badge-grade{padding:5px 10px;border-radius:999px;font-size:.82rem;font-weight:800;}
+    .g-O,.g-Ap,.g-A{background:#245f3b;color:#e5fff0;}
+    .g-Bp,.g-B{background:#5f5224;color:#fff1c2;}
+    .g-F{background:#6b3430;color:#ffd8d2;}
+    .pct-low{color:var(--danger)!important;font-weight:800;}
+    .pct-ok{color:var(--success)!important;font-weight:800;}
+    .pct-warn{color:var(--warning)!important;font-weight:800;}
+
+    .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-bottom:28px;}
+    .stat-card{padding:24px;min-height:132px;position:relative;overflow:hidden;}
+    .stat-card:after{
+      content:"\f201";
+      font-family:"Font Awesome 6 Free";
+      font-weight:900;
+      position:absolute;
+      right:22px;
+      top:22px;
+      width:48px;
+      height:48px;
+      border-radius:10px;
+      background:var(--primary);
+      color:#fff;
+      display:grid;
+      place-items:center;
+    }
+    .stat-card:nth-child(2):after{content:"\f19d";}
+    .stat-card:nth-child(3):after{content:"\f073";}
+    .stat-card:nth-child(4):after{content:"\f15c";}
+    .stat-card .val{color:var(--text);font-size:2rem;font-weight:800;line-height:1;margin-top:26px;word-break:break-word;}
+    .stat-card .lbl{color:var(--muted);font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;}
+
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+    .dash-card{
+      min-height:170px;
+      padding:24px;
+      color:var(--text);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:flex-start;
+      position:relative;
+      overflow:hidden;
+    }
+    .dash-card:hover{border-color:#63707b;transform:translateY(-2px);}
+    .icon-circle{
+      width:54px;
+      height:54px;
+      border-radius:10px;
+      background:var(--primary);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      font-size:1.35rem;
+      margin-bottom:18px;
+    }
+    .card-label{color:var(--text);font-size:1rem;font-weight:800;}
+    .badge-count{
+      position:absolute;
+      right:18px;
+      bottom:18px;
+      background:#263244;
+      color:#dce8ff;
+      border:1px solid #405579;
+      border-radius:999px;
+      padding:4px 12px;
+      font-weight:800;
+    }
+    .bg-blue,.bg-cyan,.bg-green,.bg-purple{background:var(--primary);}
+
+    .card{color:var(--text);}
+    .card-body{padding:22px;}
+    .alert{
+      background:rgba(224,131,117,.1);
+      border:1px solid rgba(224,131,117,.42);
+      color:#ffd8d2;
+      border-radius:9px;
+    }
+    .alert-success{background:rgba(140,201,159,.1);border-color:rgba(140,201,159,.42);color:#dcffe6;}
+    .empty-state{text-align:center;color:var(--muted);margin-top:60px;font-size:.96rem;}
+    .empty-state i{font-size:2rem;margin-bottom:10px;display:block;}
+    .eval-link,.reg-link,.table-action{color:#8db8ff!important;font-weight:700;text-decoration:none;}
+    .eval-link:hover,.reg-link:hover,.table-action:hover{text-decoration:underline;}
+    footer{
+      margin-left:300px;
+      color:var(--muted);
+      text-align:center;
+      padding:12px;
+      font-size:.78rem;
+    }
+    @media (max-width:900px){
+      .top-navbar{left:0;height:auto;min-height:74px;flex-wrap:wrap;padding:12px;}
+      .search-wrap{order:4;max-width:none;flex-basis:100%;}
+      .top-meta{min-width:0;}
+      .sidebar{transform:translateX(-300px);}
+      .main-content{margin-left:0;margin-top:116px;padding:22px 16px;}
+      footer{margin-left:0;}
+      .data-table-wrap .tbl-header{align-items:flex-start;flex-direction:column;}
+    }
+    @media print{
+      body{background:#fff;color:#111;}
+      .sidebar,.top-navbar,.filter-bar,.btn-print,footer{display:none!important;}
+      .main-content{margin:0!important;padding:0!important;}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="top-navbar">
+  <button class="hamburger" type="button" onclick="toggleSidebar()" aria-label="Toggle navigation"><i class="fas fa-bars"></i></button>
+  <div class="top-meta">
+    <span>Academic Year</span>
+    2025 - 2026 | Semester II
+  </div>
+  <div class="search-wrap">
+    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Search students, courses, faculty..."/>
+  </div>
+  <div class="nav-right">
+    <button class="icon-btn" type="button" aria-label="Notifications"><i class="far fa-bell"></i></button>
+    <div class="user-chip">
+      <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+      <span>{{ user.get_full_name|default:user.username|slice:":14" }}</span>
+      <i class="fas fa-chevron-down" style="font-size:.7rem;color:var(--muted);"></i>
+    </div>
+  </div>
+</nav>
+
+<aside class="sidebar" id="sidebar">
+  <a href="{% url 'home' %}" class="brand">
+    <span class="logo-text">ERP Portal</span>
+  </a>
+  <div class="section-sep">Academics</div>
+  <a href="{% url 'home' %}" class="nav-link-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+    <i class="fas fa-table-cells-large"></i> Dashboard
+  </a>
+  {% if not user.is_staff and not user.is_superuser %}
+  <a href="{% url 'attendance' %}" class="nav-link-item {% if request.resolver_match.url_name == 'attendance' %}active{% endif %}">
+    <i class="far fa-calendar-check"></i> Attendance
+  </a>
+  <div>
+    <a href="javascript:void(0)" onclick="toggleMenu('courses-menu',this)"
+       class="nav-link-item {% if request.resolver_match.url_name == 'courses' or request.resolver_match.url_name == 'course_internals' %}open active{% endif %}">
+      <i class="fas fa-book-open"></i> Courses
+      <i class="fas fa-chevron-right arrow"></i>
+    </a>
+    <div class="sub-menu {% if request.resolver_match.url_name == 'courses' or request.resolver_match.url_name == 'course_internals' %}open{% endif %}" id="courses-menu">
+      <a href="{% url 'courses' %}" class="sub-link {% if request.resolver_match.url_name == 'courses' %}active{% endif %}">My Courses</a>
+      <a href="{% url 'course_internals' %}" class="sub-link {% if request.resolver_match.url_name == 'course_internals' %}active{% endif %}">Internals</a>
+    </div>
+  </div>
+  <a href="{% url 'grades' %}" class="nav-link-item {% if request.resolver_match.url_name == 'grades' %}active{% endif %}">
+    <i class="far fa-file-lines"></i> Grades & Reports
+  </a>
+  <a href="{% url 'timetable' %}" class="nav-link-item {% if request.resolver_match.url_name == 'timetable' %}active{% endif %}">
+    <i class="far fa-calendar-days"></i> Timetable
+  </a>
+  {% endif %}
+  {% if user.is_staff or user.is_superuser %}
+  <div class="section-sep">HR & Faculty</div>
+  <a href="{% url 'student_list' %}" class="nav-link-item {% if request.resolver_match.url_name == 'student_list' %}active{% endif %}">
+    <i class="fas fa-users"></i> Students
+  </a>
+  <a href="{% url 'student_crud' %}" class="nav-link-item {% if request.resolver_match.url_name == 'student_crud' %}active{% endif %}">
+    <i class="fas fa-user-gear"></i> Student CRUD
+  </a>
+  <a href="{% url 'update_internals' %}" class="nav-link-item {% if request.resolver_match.url_name == 'update_internals' %}active{% endif %}">
+    <i class="fas fa-pen-to-square"></i> Faculty Internals
+  </a>
+  <a href="/admin/" class="nav-link-item">
+    <i class="far fa-building"></i> Admin Panel
+  </a>
+  {% endif %}
+  <div class="section-sep">Account</div>
+  <a href="{% url 'logout' %}" class="nav-link-item">
+    <i class="fas fa-right-from-bracket"></i> Logout
+  </a>
+</aside>
+
+<div class="main-content">
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" style="margin-bottom:16px;">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+  {% block content %}{% endblock %}
+</div>
+
+<footer>Copyright 2026 Educational ERP. All rights reserved.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function toggleSidebar(){
+  var s=document.getElementById('sidebar');
+  s.style.transform=s.style.transform==='translateX(-300px)'?'':'translateX(-300px)';
+}
+function toggleMenu(id,el){
+  var m=document.getElementById(id);
+  m.classList.toggle('open');
+  el.classList.toggle('open');
+}
+function goToInternals(){
+  var roll = document.getElementById('rollInput').value.trim();
+  if(roll) window.location='/internals/update/?roll='+roll;
+  else alert('Please enter a register number');
+}
+</script>
+</body>
+</html>

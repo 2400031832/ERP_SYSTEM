@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}My Courses - KL ERP{% endblock %}
+{% block content %}
+<div class="page-header">My Courses</div>
+
+<form method="get" action="">
+<div class="filter-bar">
+  <div class="fgroup">
+    <label>Academic Year</label>
+    <select name="academic_year">
+      <option value="">Select Academic Year</option>
+      {% for y in years %}
+      <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="fgroup">
+    <label>Semester</label>
+    <select name="semester">
+      <option value="">Select Semester</option>
+      {% for s in semesters %}
+      <option value="{{ s }}" {% if s == selected_sem %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn-search">Search</button>
+  <a href="{% url 'courses' %}" class="btn-reset">Reset</a>
+</div>
+</form>
+
+{% if search_submitted %}
+{% if is_student %}
+<div class="stat-cards">
+  <div class="stat-card"><div class="val">{{ courses|length }}</div><div class="lbl">Total Courses</div></div>
+  <div class="stat-card"><div class="val">{{ selected_sem }}</div><div class="lbl">Semester</div></div>
+  <div class="stat-card"><div class="val" style="font-size:1.1rem;">{{ student.department }}</div><div class="lbl">Department</div></div>
+  <div class="stat-card"><div class="val">{{ selected_year }}</div><div class="lbl">Academic Year</div></div>
+</div>
+{% endif %}
+
+<div class="data-table-wrap">
+  <div class="tbl-header">
+    <div><div class="tbl-title">Course List</div>
+    <div class="total-badge">Total {{ courses|length }} items.</div></div>
+  </div>
+  <div style="overflow-x:auto;">
+  <table class="erp-table">
+    <thead>
+      <tr><th>#</th><th>Course Code</th><th>Course Name</th><th>Credits</th><th>Semester</th><th>Academic Year</th></tr>
+    </thead>
+    <tbody>
+      {% for c in courses %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td><span class="badge-code">{{ c.course_code }}</span></td>
+        <td>{{ c.course_name }}</td>
+        <td style="text-align:center;">{{ c.credits }}</td>
+        <td>{{ c.semester }}</td>
+        <td>{{ c.academic_year }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;">No courses found for this selection.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="fas fa-book"></i>
+  Select Academic Year and Semester to view your courses.
+</div>
+{% endif %}
+{% endblock %}

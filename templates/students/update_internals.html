@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block title %}Update Internals - Educational ERP{% endblock %}
+{% block content %}
+<div class="page-header">Update Student Internals</div>
+
+<div class="filter-bar">
+  <div class="fgroup">
+    <label>Register Number</label>
+    <input type="text" id="rollInput" placeholder="e.g. 2400030008" value="{{ selected_roll }}" onkeydown="if(event.key==='Enter') applyFilters()"/>
+  </div>
+  <div class="fgroup">
+    <label>Academic Year</label>
+    <select id="yearSel">
+      <option value="">Select Year</option>
+      {% for y in years %}
+      <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="fgroup">
+    <label>Semester</label>
+    <select id="semSel">
+      <option value="">Select Semester</option>
+      <option value="Odd Sem" {% if selected_sem == 'Odd Sem' %}selected{% endif %}>Odd Sem</option>
+      <option value="Even Sem" {% if selected_sem == 'Even Sem' %}selected{% endif %}>Even Sem</option>
+    </select>
+  </div>
+  <button class="btn-search" onclick="applyFilters()">Search</button>
+  <a href="{% url 'update_internals' %}" class="btn-reset">Reset</a>
+  {% if selected_student %}
+  <div style="margin-left:auto;background:#263244;border:1px solid var(--field-line);color:var(--text);border-radius:9px;padding:10px 18px;font-size:.85rem;">
+    <b>{{ selected_student.user.get_full_name|default:selected_student.user.username|upper }}</b>
+    &nbsp;|&nbsp; {{ selected_student.department }}
+    &nbsp;|&nbsp; Year {{ selected_student.year }}
+  </div>
+  {% endif %}
+</div>
+
+{% if courses %}
+<div class="data-table-wrap">
+  <div class="tbl-header">
+    <div>
+      <div class="tbl-title">Course Internals</div>
+      <div class="total-badge">Total {{ courses|length }} items.</div>
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="erp-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Academic Year</th><th>Semester</th>
+          <th>Course Code</th><th>Course Name</th><th>Evaluation Components</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in courses %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ selected_year }}</td>
+          <td>{{ selected_sem }}</td>
+          <td><span class="badge-code">{{ c.course_code }}</span></td>
+          <td>{{ c.course_desc }}</td>
+          <td>
+            {% if c.credits == 4 %}
+              <a href="#" class="eval-link" onclick="openEdit('{{ c.course_code }}','{{ c.course_desc }}','Lab In sem-II',{{ c.pk }}); return false;">Lab In sem-II</a>
+              <a href="#" class="eval-link" onclick="openEdit('{{ c.course_code }}','{{ c.course_desc }}','Lab In sem-I',{{ c.pk }}); return false;">Lab In sem-I</a>
+              <a href="#" class="eval-link" onclick="openEdit('{{ c.course_code }}','{{ c.course_desc }}','MOOCs Review',{{ c.pk }}); return false;">MOOCs Review</a>
+              <a href="#" class="eval-link" onclick="openEdit('{{ c.course_code }}','{{ c.course_desc }}','ALM',{{ c.pk }}); return false;">ALM</a>
+              <a href="#" class="eval-link" onclick="openEdit('{{ c.course_code }}','{{ c.course_desc }}','Continuous Evaluation - Lab Exercise',{{ c.pk }}); return false;">Continuous Evaluation - Lab Exercise</a>
+            {% else %}
+              <a href="#" class="eval-link" onclick="openEdit('{{ c.course_code }}','{{ c.course_desc }}','Semester in Exam-II',{{ c.pk }}); return false;">Semester in Exam-II</a>
+              <a href="#" class="eval-link" onclick="openEdit('{{ c.course_code }}','{{ c.course_desc }}','Semester in Exam-I',{{ c.pk }}); return false;">Semester in Exam-I</a>
+              <a href="#" class="eval-link" onclick="openEdit('{{ c.course_code }}','{{ c.course_desc }}','Tutorial',{{ c.pk }}); return false;">Tutorial</a>
+              <a href="#" class="eval-link" onclick="openEdit('{{ c.course_code }}','{{ c.course_desc }}','Home Assignment and Textbook',{{ c.pk }}); return false;">Home Assignment and Textbook</a>
+              <a href="#" class="eval-link" onclick="openEdit('{{ c.course_code }}','{{ c.course_desc }}','ALM',{{ c.pk }}); return false;">ALM</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% elif selected_roll and selected_year and selected_sem %}
+<div class="empty-state">
+  <i class="fas fa-search"></i>
+  No courses found for this student and selection.
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="fas fa-user-graduate"></i>
+  Enter a Register Number, select Academic Year and Semester, then click Search.
+</div>
+{% endif %}
+
+<div id="editModal" class="dark-modal">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div>
+        <div id="modalTitle" style="font-weight:800;"></div>
+        <div id="modalSubtitle" style="font-size:.84rem;color:var(--muted);margin-top:3px;"></div>
+      </div>
+      <button type="button" onclick="closeEdit()" aria-label="Close">&times;</button>
+    </div>
+    <form method="post" action="" id="editForm">
+      {% csrf_token %}
+      <input type="hidden" name="grade_pk" id="modalGradePk"/>
+      <input type="hidden" name="component" id="modalComponent"/>
+      <div class="modal-body">
+        <table class="edit-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Max Marks</th>
+              <th>Internal Marks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="compName"></td>
+              <td id="compMax"></td>
+              <td>
+                <input type="number" name="internal_marks" id="marksInput" min="0" max="50" step="0.5"/>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:16px;font-size:.82rem;color:var(--muted);">
+          <i class="fas fa-info-circle"></i> Saving will instantly update the student's grade record.
+        </div>
+      </div>
+      <div style="padding:0 28px 22px;display:flex;gap:10px;justify-content:flex-end;">
+        <button type="button" onclick="closeEdit()" class="btn-reset">Cancel</button>
+        <button type="submit" class="btn-search"><i class="fas fa-save"></i> Save Marks</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.eval-link{color:#8db8ff;display:block;font-size:.82rem;text-decoration:none;margin-bottom:2px;}
+.eval-link:hover{text-decoration:underline;}
+.dark-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:9999;overflow:auto;padding:34px 16px;}
+.modal-panel{max-width:620px;width:min(620px,100%);margin:0 auto;overflow:hidden;}
+.modal-head{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:20px 28px;border-bottom:1px solid var(--panel-line);}
+.modal-head button{width:34px;height:34px;border:1px solid var(--field-line);border-radius:50%;background:transparent;color:var(--text);font-size:1.2rem;cursor:pointer;}
+.modal-body{padding:24px 28px;}
+.edit-table{width:100%;border-collapse:collapse;font-size:.88rem;color:var(--text);}
+.edit-table th{background:#263244;color:var(--text);border:1px solid var(--panel-line);padding:9px 12px;text-align:center;}
+.edit-table th:first-child{text-align:left;}
+.edit-table td{border:1px solid var(--panel-line);padding:12px;text-align:center;}
+.edit-table td:first-child{text-align:left;}
+#marksInput{width:92px;padding:7px;border:1px solid var(--field-line);background:var(--field);color:var(--text);border-radius:7px;font-size:1rem;font-weight:800;text-align:center;}
+</style>
+
+<script>
+var COMP_MAX = {
+  'Semester in Exam-I': 30, 'Semester in Exam-II': 30,
+  'Tutorial': 10, 'Home Assignment and Textbook': 10, 'ALM': 10,
+  'Lab In sem-I': 25, 'Lab In sem-II': 25,
+  'MOOCs Review': 15, 'Continuous Evaluation - Lab Exercise': 15,
+};
+
+var GRADES_DATA = {
+  {% for c in courses %}
+  {{ c.pk }}: { internal: {{ c.internal_marks }}, external: {{ c.external_marks }} },
+  {% endfor %}
+};
+
+function applyFilters() {
+  var roll = document.getElementById('rollInput').value.trim();
+  var year = document.getElementById('yearSel').value;
+  var sem = document.getElementById('semSel').value;
+  if (!roll) { alert('Please enter a Register Number'); return; }
+  window.location = '{% url "update_internals" %}?roll=' + roll + '&year=' + encodeURIComponent(year) + '&sem=' + encodeURIComponent(sem);
+}
+
+function openEdit(code, desc, comp, pk) {
+  document.getElementById('modalTitle').textContent = code + ' - ' + comp;
+  document.getElementById('modalSubtitle').textContent = desc;
+  document.getElementById('modalGradePk').value = pk;
+  document.getElementById('modalComponent').value = comp;
+  document.getElementById('compName').textContent = comp;
+  document.getElementById('compMax').textContent = COMP_MAX[comp] || 50;
+  var cur = GRADES_DATA[pk] ? GRADES_DATA[pk].internal : 0;
+  document.getElementById('marksInput').value = cur;
+  document.getElementById('marksInput').max = COMP_MAX[comp] || 50;
+  document.getElementById('editForm').action = window.location.href;
+  document.getElementById('editModal').style.display = 'block';
+}
+
+function closeEdit() {
+  document.getElementById('editModal').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEdit();
+  });
+});
+</script>
+{% endblock %}

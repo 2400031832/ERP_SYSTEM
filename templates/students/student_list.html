@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Students Management - KL ERP{% endblock %}
+{% block content %}
+<div class="page-header">Students Management</div>
+
+<div class="data-table-wrap">
+  <div class="tbl-header">
+    <div>
+      <div class="tbl-title">Student List</div>
+      <div class="total-badge">Total {{ students|length }} students</div>
+    </div>
+    <a href="{% url 'student_crud' %}" class="action-link action-primary" style="font-size:0.85rem;">
+      <i class="fas fa-plus"></i> Add New Student
+    </a>
+  </div>
+  <div style="overflow-x:auto;">
+  <table class="erp-table">
+    <thead>
+      <tr>
+        <th>Roll No</th><th>Name</th><th>Department</th><th>Year</th><th>Semester</th><th>Phone</th><th>Email</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td><span class="badge-code">{{ s.roll_number }}</span></td>
+        <td>{{ s.user.get_full_name|default:s.user.username|upper }}</td>
+        <td>{{ s.department }}</td>
+        <td style="text-align:center;">{{ s.year }}</td>
+        <td style="text-align:center;">{{ s.semester }}</td>
+        <td>{{ s.user.phone|default:s.phone|default:"-" }}</td>
+        <td>{{ s.user.email|default:"-" }}</td>
+        <td>
+          <a href="{% url 'update_internals' %}?roll={{ s.roll_number }}" class="table-action" style="font-size:0.82rem;margin-right:10px;">
+            <i class="fas fa-edit"></i> Edit Internals
+          </a>
+          <a href="/admin/students/student/{{ s.pk }}/change/" class="table-action" style="font-size:0.82rem;">
+            <i class="fas fa-cog"></i> Edit
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px;">No students found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard - Educational ERP{% endblock %}
+{% block content %}
+<div class="page-header">Admin Dashboard</div>
+
+<div class="stat-cards">
+  <div class="stat-card"><div class="val">{{ total_students }}</div><div class="lbl">Students</div></div>
+  <div class="stat-card"><div class="val">{{ total_courses }}</div><div class="lbl">Courses</div></div>
+  <div class="stat-card"><div class="val">{{ total_attendance }}</div><div class="lbl">Attendance Records</div></div>
+  <div class="stat-card"><div class="val">{{ low_attendance_count }}</div><div class="lbl">Low Attendance</div></div>
+</div>
+
+<div class="data-table-wrap">
+  <div class="tbl-header">
+    <div>
+      <div class="tbl-title">Recent Students</div>
+      <div class="total-badge">Latest student records in the ERP.</div>
+    </div>
+    <a class="action-link action-primary" href="{% url 'student_crud' %}">
+      <i class="fas fa-user-plus"></i> Manage Students
+    </a>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="erp-table">
+      <thead>
+        <tr>
+          <th>Roll No</th>
+          <th>Name</th>
+          <th>Department</th>
+          <th>Year</th>
+          <th>Semester</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in recent_students %}
+        <tr>
+          <td><span class="badge-code">{{ s.roll_number }}</span></td>
+          <td>{{ s.user.get_full_name|default:s.user.username }}</td>
+          <td>{{ s.department }}</td>
+          <td>{{ s.year }}</td>
+          <td>{{ s.semester }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px;">No students found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
