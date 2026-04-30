@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -83,9 +84,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "erp_system.wsgi.application"
 
-use_sqlite = env_bool("USE_SQLITE", not os.environ.get("POSTGRES_HOST"))
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-if use_sqlite:
+if DATABASE_URL:
+    db_url = urlparse(DATABASE_URL)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": db_url.path.lstrip("/"),
+            "USER": db_url.username,
+            "PASSWORD": db_url.password,
+            "HOST": db_url.hostname,
+            "PORT": db_url.port or "5432",
+            "CONN_MAX_AGE": 600,
+        }
+    }
+elif env_bool("USE_SQLITE", not os.environ.get("POSTGRES_HOST")):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
