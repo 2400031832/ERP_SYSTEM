@@ -18,6 +18,8 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     ".vercel.app",
+    ".railway.app",
+    ".up.railway.app",
     "2400030008.pythonanywhere.com",
 ]
 
@@ -27,6 +29,8 @@ if extra_hosts:
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.vercel.app",
+    "https://*.railway.app",
+    "https://*.up.railway.app",
 ]
 
 extra_csrf = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
