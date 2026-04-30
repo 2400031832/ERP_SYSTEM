@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 from urllib.parse import urlparse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -84,37 +85,69 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "erp_system.wsgi.application"
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+IS_RAILWAY = bool(
+    os.environ.get("RAILWAY_ENVIRONMENT")
+    or os.environ.get("RAILWAY_PROJECT_ID")
+    or os.environ.get("RAILWAY_SERVICE_ID")
+)
+
+
+def postgres_config_from_url(database_url):
+    db_url = urlparse(database_url)
+    return {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": db_url.path.lstrip("/"),
+        "USER": db_url.username,
+        "PASSWORD": db_url.password,
+        "HOST": db_url.hostname,
+        "PORT": db_url.port or "5432",
+        "CONN_MAX_AGE": 600,
+    }
+
+
+DATABASE_URL = (
+    os.environ.get("DATABASE_URL")
+    or os.environ.get("DATABASE_PRIVATE_URL")
+    or os.environ.get("DATABASE_PUBLIC_URL")
+)
 
 if DATABASE_URL:
-    db_url = urlparse(DATABASE_URL)
+    DATABASES = {"default": postgres_config_from_url(DATABASE_URL)}
+elif os.environ.get("PGHOST"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": db_url.path.lstrip("/"),
-            "USER": db_url.username,
-            "PASSWORD": db_url.password,
-            "HOST": db_url.hostname,
-            "PORT": db_url.port or "5432",
+            "NAME": os.environ.get("PGDATABASE", "railway"),
+            "USER": os.environ.get("PGUSER", "postgres"),
+            "PASSWORD": os.environ.get("PGPASSWORD", ""),
+            "HOST": os.environ.get("PGHOST"),
+            "PORT": os.environ.get("PGPORT", "5432"),
             "CONN_MAX_AGE": 600,
         }
     }
-elif env_bool("USE_SQLITE", not os.environ.get("POSTGRES_HOST")):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
-else:
+elif os.environ.get("POSTGRES_HOST"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
             "NAME": os.environ.get("POSTGRES_DB", "ERP"),
             "USER": os.environ.get("POSTGRES_USER", "postgres"),
             "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
-            "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+            "HOST": os.environ.get("POSTGRES_HOST"),
             "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+            "CONN_MAX_AGE": 600,
+        }
+    }
+elif IS_RAILWAY:
+    raise ImproperlyConfigured(
+        "Railway deployment needs a PostgreSQL variable. Add DATABASE_URL from "
+        "your Railway PostgreSQL service, or link the PostgreSQL service so PGHOST, "
+        "PGDATABASE, PGUSER, and PGPASSWORD are available."
+    )
+elif env_bool("USE_SQLITE", True):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
