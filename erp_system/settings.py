@@ -1,7 +1,9 @@
 import os
+import shutil
+import tempfile
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -95,7 +97,7 @@ IS_VERCEL = bool(os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV"))
 
 def postgres_config_from_url(database_url):
     db_url = urlparse(database_url)
-    return {
+    config = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": db_url.path.lstrip("/"),
         "USER": db_url.username,
@@ -104,12 +106,19 @@ def postgres_config_from_url(database_url):
         "PORT": db_url.port or "5432",
         "CONN_MAX_AGE": 600,
     }
+    query = parse_qs(db_url.query)
+    sslmode = query.get("sslmode", [None])[0]
+    if sslmode:
+        config["OPTIONS"] = {"sslmode": sslmode}
+    return config
 
 
 DATABASE_URL = (
     os.environ.get("DATABASE_URL")
     or os.environ.get("DATABASE_PRIVATE_URL")
     or os.environ.get("DATABASE_PUBLIC_URL")
+    or os.environ.get("POSTGRES_URL")
+    or os.environ.get("POSTGRES_URL_NON_POOLING")
 )
 
 if DATABASE_URL:
@@ -145,10 +154,17 @@ elif IS_RAILWAY:
         "PGDATABASE, PGUSER, and PGPASSWORD are available."
     )
 elif env_bool("USE_SQLITE", True):
+    sqlite_name = BASE_DIR / "db.sqlite3"
+    if IS_VERCEL:
+        sqlite_name = Path(tempfile.gettempdir()) / "erp_db.sqlite3"
+        source_db = BASE_DIR / "db.sqlite3"
+        if source_db.exists() and not sqlite_name.exists():
+            shutil.copyfile(source_db, sqlite_name)
+
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": sqlite_name,
         }
     }
 
@@ -173,3 +189,7 @@ if IS_VERCEL:
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    MIDDLEWARE.insert(
+        MIDDLEWARE.index("django.contrib.auth.middleware.AuthenticationMiddleware") + 1,
+        "users.middleware.VercelCookieAuthMiddleware",
+    )

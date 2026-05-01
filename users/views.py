@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.conf import settings
 from .models import CustomUser
 
 
@@ -29,9 +30,20 @@ def login_view(request):
             expected_role = role_map.get(role, 'student')
             
             if user.role == expected_role:
-                login(request, user)
-                messages.success(request, f'Welcome back, {user.first_name or user.username}!')
-                return redirect('home')
+                response = redirect('home')
+                if getattr(settings, 'IS_VERCEL', False):
+                    response.set_signed_cookie(
+                        'erp_user_id',
+                        str(user.pk),
+                        salt='erp-auth',
+                        httponly=True,
+                        secure=True,
+                        samesite='Lax',
+                    )
+                else:
+                    login(request, user)
+                    messages.success(request, f'Welcome back, {user.first_name or user.username}!')
+                return response
             else:
                 messages.error(request, f'This account is not a {role} account')
         else:
@@ -106,9 +118,13 @@ def register_view(request):
 
 def logout_view(request):
     """Handle user logout"""
-    logout(request)
-    messages.success(request, 'You have been logged out successfully!')
-    return redirect('login')
+    response = redirect('login')
+    if getattr(settings, 'IS_VERCEL', False):
+        response.delete_cookie('erp_user_id')
+    else:
+        logout(request)
+        messages.success(request, 'You have been logged out successfully!')
+    return response
 
 
 @login_required
