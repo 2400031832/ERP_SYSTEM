@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "users",
+    "users.apps.UsersConfig",
     "students",
     "attendance",
     "grades",
@@ -90,6 +90,7 @@ IS_RAILWAY = bool(
     or os.environ.get("RAILWAY_PROJECT_ID")
     or os.environ.get("RAILWAY_SERVICE_ID")
 )
+IS_VERCEL = bool(os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV"))
 
 
 def postgres_config_from_url(database_url):
@@ -167,3 +168,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.CustomUser"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
+
+if IS_VERCEL:
+    SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
