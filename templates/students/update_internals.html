@@ -5,8 +5,8 @@
 
 <div class="filter-bar">
   <div class="fgroup">
-    <label>Register Number</label>
-    <input type="text" id="rollInput" placeholder="e.g. 2400030008" value="{{ selected_roll }}" onkeydown="if(event.key==='Enter') applyFilters()"/>
+    <label>Student ID Number</label>
+    <input type="text" id="studentIdInput" placeholder="Enter Roll No / Registration No / Student ID" value="{{ selected_student_id }}" onkeydown="if(event.key==='Enter') applyFilters()"/>
   </div>
   <div class="fgroup">
     <label>Academic Year</label>
@@ -30,6 +30,8 @@
   {% if selected_student %}
   <div style="margin-left:auto;background:#263244;border:1px solid var(--field-line);color:var(--text);border-radius:9px;padding:10px 18px;font-size:.85rem;">
     <b>{{ selected_student.user.get_full_name|default:selected_student.user.username|upper }}</b>
+    &nbsp;|&nbsp; Roll {{ selected_student.roll_number }}
+    &nbsp;|&nbsp; Reg {{ selected_student.registration_number }}
     &nbsp;|&nbsp; {{ selected_student.department }}
     &nbsp;|&nbsp; Year {{ selected_student.year }}
   </div>
@@ -56,8 +58,8 @@
         {% for c in courses %}
         <tr>
           <td>{{ forloop.counter }}</td>
-          <td>{{ selected_year }}</td>
-          <td>{{ selected_sem }}</td>
+          <td>{{ c.academic_year }}</td>
+          <td>{{ c.semester }}</td>
           <td><span class="badge-code">{{ c.course_code }}</span></td>
           <td>{{ c.course_desc }}</td>
           <td>
@@ -81,15 +83,20 @@
     </table>
   </div>
 </div>
-{% elif selected_roll and selected_year and selected_sem %}
+{% elif selected_student_id and selected_student %}
 <div class="empty-state">
   <i class="fas fa-search"></i>
-  No courses found for this student and selection.
+  No courses found for this student and selected filters.
+</div>
+{% elif selected_student_id and not selected_student %}
+<div class="empty-state">
+  <i class="fas fa-user-xmark"></i>
+  No student found for the entered Student ID number.
 </div>
 {% else %}
 <div class="empty-state">
   <i class="fas fa-user-graduate"></i>
-  Enter a Register Number, select Academic Year and Semester, then click Search.
+  Enter a Student ID number and click Search to edit internal marks.
 </div>
 {% endif %}
 
@@ -168,11 +175,18 @@ var GRADES_DATA = {
 };
 
 function applyFilters() {
-  var roll = document.getElementById('rollInput').value.trim();
+  var studentId = document.getElementById('studentIdInput').value.trim();
   var year = document.getElementById('yearSel').value;
   var sem = document.getElementById('semSel').value;
-  if (!roll) { alert('Please enter a Register Number'); return; }
-  window.location = '{% url "update_internals" %}?roll=' + roll + '&year=' + encodeURIComponent(year) + '&sem=' + encodeURIComponent(sem);
+  if (!studentId) { alert('Please enter a Student ID Number'); return; }
+  var targetUrl = '{% url "update_internals" %}?student_id=' + encodeURIComponent(studentId);
+  if (year) {
+    targetUrl += '&year=' + encodeURIComponent(year);
+  }
+  if (sem) {
+    targetUrl += '&sem=' + encodeURIComponent(sem);
+  }
+  window.location = targetUrl;
 }
 
 function openEdit(code, desc, comp, pk) {

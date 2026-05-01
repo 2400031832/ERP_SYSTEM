@@ -1,54 +1,10 @@
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 from .models import Student, Course, Attendance, Grade
 from users.models import CustomUser
-
-
-def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('home')
-    if request.method == 'POST':
-        user = authenticate(request, username=request.POST.get('username'), password=request.POST.get('password'))
-        if user:
-            login(request, user)
-            return redirect('home')
-        messages.error(request, 'Invalid username or password')
-    return render(request, 'login.html')
-
-
-def register_view(request):
-    if request.method == 'POST':
-        try:
-            pw = request.POST.get('password')
-            if pw != request.POST.get('password2'):
-                messages.error(request, 'Passwords do not match!')
-                return render(request, 'register.html')
-            username = request.POST.get('registration_number') or request.POST.get('username')
-            if CustomUser.objects.filter(username=username).exists():
-                messages.error(request, 'Registration number already registered!')
-                return render(request, 'register.html')
-            user = CustomUser.objects.create_user(
-                username=username, email=request.POST.get('email'), password=pw,
-                first_name=request.POST.get('first_name'), last_name=request.POST.get('last_name'))
-            Student.objects.create(
-                user=user, roll_number=request.POST.get('registration_number'),
-                registration_number=request.POST.get('registration_number'),
-                date_of_birth=request.POST.get('date_of_birth'), phone=request.POST.get('phone'),
-                address=request.POST.get('address'), department=request.POST.get('department'),
-                year=request.POST.get('year'), semester=request.POST.get('semester'))
-            messages.success(request, 'Account created! Please login.')
-            return redirect('login')
-        except Exception as e:
-            messages.error(request, f'Error: {str(e)}')
-    return render(request, 'register.html')
-
-
-def logout_view(request):
-    logout(request)
-    return redirect('login')
 
 
 @login_required
@@ -107,7 +63,7 @@ def student_create(request):
             user = CustomUser.objects.create_user(
                 username=request.POST.get('username'), email=request.POST.get('email'),
                 password='student123', first_name=request.POST.get('first_name'),
-                last_name=request.POST.get('last_name'))
+                last_name=request.POST.get('last_name'), role='student', phone=request.POST.get('phone', ''))
             Student.objects.create(
                 user=user, roll_number=request.POST.get('roll_number'),
                 registration_number=request.POST.get('registration_number'),
@@ -288,12 +244,11 @@ def course_internals(request):
         student = Student.objects.get(user=request.user)
         if search_submitted:
             from students.models import Grade
-            grade_qs = Grade.objects.filter(
+            courses = list(Grade.objects.filter(
                 student=student,
                 academic_year=academic_year,
                 semester=semester,
-            ).values('course_code', 'course_desc', 'credits')
-            courses = list(grade_qs)
+            ).order_by('course_code'))
         else:
             courses = []
         return render(request, 'courses/internals.html', {
@@ -378,19 +333,26 @@ def grades(request):
 
 @login_required
 def update_internals(request):
-    if not (request.user.is_staff or request.user.is_superuser):
+    if not (
+        request.user.is_staff
+        or request.user.is_superuser
+        or getattr(request.user, 'role', '') in ['teacher', 'admin', 'administrator']
+    ):
         return redirect('home')
 
     years = ['2024-2025', '2025-2026']
-    selected_roll = request.GET.get('roll', '')
+    selected_student_id = request.GET.get('student_id', '').strip() or request.GET.get('roll', '').strip()
     selected_year = request.GET.get('year', '')
     selected_sem  = request.GET.get('sem', '')
     selected_student = None
     courses = []
 
-    if selected_roll:
+    if selected_student_id:
         try:
-            selected_student = Student.objects.select_related('user').get(roll_number=selected_roll)
+            student_filters = Q(roll_number__iexact=selected_student_id) | Q(registration_number__iexact=selected_student_id)
+            if selected_student_id.isdigit():
+                student_filters = student_filters | Q(pk=int(selected_student_id))
+            selected_student = Student.objects.select_related('user').get(student_filters)
             qs = selected_student.grades.all()
             if selected_year:
                 qs = qs.filter(academic_year=selected_year)
@@ -400,13 +362,12 @@ def update_internals(request):
         except Student.DoesNotExist:
             pass
 
-    if request.method == 'POST' and selected_roll:
+    if request.method == 'POST' and selected_student:
         from django.contrib import messages as msg_mod
         grade_pk = request.POST.get('grade_pk')
         component = request.POST.get('component', '')
         internal_marks = request.POST.get('internal_marks')
         try:
-            selected_student = Student.objects.select_related('user').get(roll_number=selected_roll)
             g = Grade.objects.get(pk=int(grade_pk), student=selected_student)
             new_internal = float(internal_marks)
             total = new_internal + g.external_marks
@@ -436,7 +397,7 @@ def update_internals(request):
 
     return render(request, 'students/update_internals.html', {
         'years': years,
-        'selected_roll': selected_roll,
+        'selected_student_id': selected_student_id,
         'selected_year': selected_year,
         'selected_sem': selected_sem,
         'selected_student': selected_student,

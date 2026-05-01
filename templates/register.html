@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Parent Registration - Educational ERP</title>
+  <title>{{ title }} - Educational ERP</title>
   <style>
     :root{
       --page:#222728;
@@ -53,6 +53,29 @@
       text-align:center;
       margin-bottom:30px;
     }
+    .role-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:24px;
+    }
+    .role-btn{
+      height:50px;
+      border:1px solid var(--field-line);
+      border-radius:9px;
+      background:transparent;
+      color:#d5c8b2;
+      font:inherit;
+      font-size:1.02rem;
+      cursor:pointer;
+      transition:background .18s,border-color .18s,color .18s;
+    }
+    .role-btn:hover{border-color:#63707b;color:var(--text);}
+    .role-btn.active{
+      background:var(--primary);
+      border-color:var(--primary);
+      color:#fff;
+    }
     .form-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
@@ -96,6 +119,7 @@
       background:#1c1e20;
       color:var(--text);
     }
+    .student-only[hidden]{display:none !important;}
     .register-alert{
       border:1px solid rgba(224,131,117,.42);
       background:rgba(224,131,117,.1);
@@ -156,14 +180,15 @@
       .register-card{padding:32px 22px 26px;border-radius:14px;}
       .register-title{font-size:2rem;}
       .register-subtitle{font-size:1rem;}
+      .role-grid{grid-template-columns:1fr;}
       .form-grid,.button-row{grid-template-columns:1fr;}
     }
   </style>
 </head>
 <body>
   <main class="register-card" aria-labelledby="registerTitle">
-    <h1 class="register-title" id="registerTitle">Parent Registration</h1>
-    <p class="register-subtitle">Create student access for the Educational ERP</p>
+    <h1 class="register-title" id="registerTitle">{{ title }}</h1>
+    <p class="register-subtitle">{{ subtitle }}</p>
 
     {% if messages %}
       {% for message in messages %}
@@ -175,6 +200,14 @@
 
     <form method="POST">
       {% csrf_token %}
+      <input type="hidden" name="role" id="selectedRole" value="{{ selected_role }}">
+
+      <div class="role-grid" role="group" aria-label="Select sign up role">
+        <button class="role-btn {% if selected_role == 'student' %}active{% endif %}" type="button" data-role="student">Student</button>
+        <button class="role-btn {% if selected_role == 'teacher' %}active{% endif %}" type="button" data-role="teacher">Faculty</button>
+        <button class="role-btn {% if selected_role == 'admin' %}active{% endif %}" type="button" data-role="admin">Admin</button>
+        <button class="role-btn {% if selected_role == 'administrator' %}active{% endif %}" type="button" data-role="administrator">Administrator</button>
+      </div>
 
       <div class="form-grid">
         <div class="field-group">
@@ -202,34 +235,39 @@
           <input class="form-input" id="password2" type="password" name="password2" autocomplete="new-password" required>
         </div>
 
-        <div class="field-group">
-          <label for="roll_number">Roll Number *</label>
-          <input class="form-input" id="roll_number" type="text" name="roll_number" required>
+        <div class="field-group full" id="usernameGroup">
+          <label for="username">Username *</label>
+          <input class="form-input" id="username" type="text" name="username" autocomplete="username">
         </div>
 
-        <div class="field-group">
+        <div class="student-only field-group" id="rollGroup">
+          <label for="roll_number">Roll Number *</label>
+          <input class="form-input" id="roll_number" type="text" name="roll_number">
+        </div>
+
+        <div class="student-only field-group" id="registrationGroup">
           <label for="registration_number">Registration Number *</label>
-          <input class="form-input" id="registration_number" type="text" name="registration_number" required>
+          <input class="form-input" id="registration_number" type="text" name="registration_number">
         </div>
 
         <div class="field-group">
           <label for="phone">Phone *</label>
-          <input class="form-input" id="phone" type="tel" name="phone" autocomplete="tel" required>
+          <input class="form-input" id="phone" type="tel" name="phone" autocomplete="tel">
         </div>
 
-        <div class="field-group">
+        <div class="student-only field-group" id="dobGroup">
           <label for="date_of_birth">Date of Birth *</label>
-          <input class="form-input" id="date_of_birth" type="date" name="date_of_birth" required>
+          <input class="form-input" id="date_of_birth" type="date" name="date_of_birth">
         </div>
 
-        <div class="field-group full">
+        <div class="student-only field-group full" id="addressGroup">
           <label for="address">Address *</label>
-          <input class="form-input" id="address" type="text" name="address" autocomplete="street-address" required>
+          <input class="form-input" id="address" type="text" name="address" autocomplete="street-address">
         </div>
 
-        <div class="field-group">
+        <div class="student-only field-group" id="departmentGroup">
           <label for="department">Department *</label>
-          <select class="form-select" id="department" name="department" required>
+          <select class="form-select" id="department" name="department">
             <option value="">Select</option>
             <option value="Computer Science">Computer Science</option>
             <option value="Information Technology">Information Technology</option>
@@ -238,22 +276,74 @@
           </select>
         </div>
 
-        <div class="field-group">
+        <div class="student-only field-group" id="yearGroup">
           <label for="year">Year *</label>
-          <input class="form-input" id="year" type="number" name="year" min="1" max="4" required>
+          <input class="form-input" id="year" type="number" name="year" min="1" max="4">
         </div>
 
-        <div class="field-group">
+        <div class="student-only field-group" id="semesterGroup">
           <label for="semester">Semester *</label>
-          <input class="form-input" id="semester" type="number" name="semester" min="1" max="8" required>
+          <input class="form-input" id="semester" type="number" name="semester" min="1" max="8">
         </div>
       </div>
 
       <div class="button-row">
         <a class="back-btn" href="{% url 'login' %}">Back to Login</a>
-        <button class="submit-btn" type="submit">Register Parent</button>
+        <button class="submit-btn" type="submit">{{ submit_label }}</button>
       </div>
     </form>
   </main>
+
+  <script>
+    const selectedRole = document.getElementById('selectedRole');
+    const usernameGroup = document.getElementById('usernameGroup');
+    const usernameInput = document.getElementById('username');
+    const studentFields = Array.from(document.querySelectorAll('.student-only'));
+    const roleButtons = document.querySelectorAll('.role-btn');
+    const registrationInput = document.getElementById('registration_number');
+    const studentRequiredFields = ['roll_number', 'registration_number', 'date_of_birth', 'address', 'department', 'year', 'semester'];
+
+    function setRequiredState(role) {
+      const isStudent = role === 'student';
+
+      studentFields.forEach((field) => {
+        field.hidden = !isStudent;
+      });
+
+      usernameGroup.classList.toggle('full', !isStudent);
+      usernameGroup.hidden = isStudent;
+      usernameInput.required = !isStudent;
+
+      studentRequiredFields.forEach((fieldId) => {
+        const element = document.getElementById(fieldId);
+        if (element) {
+          element.required = isStudent;
+        }
+      });
+
+      if (isStudent) {
+        usernameInput.value = registrationInput.value || usernameInput.value;
+      }
+    }
+
+    roleButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        roleButtons.forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        selectedRole.value = button.dataset.role;
+        setRequiredState(button.dataset.role);
+      });
+    });
+
+    if (registrationInput) {
+      registrationInput.addEventListener('input', () => {
+        if (selectedRole.value === 'student') {
+          usernameInput.value = registrationInput.value;
+        }
+      });
+    }
+
+    setRequiredState(selectedRole.value || 'student');
+  </script>
 </body>
 </html>

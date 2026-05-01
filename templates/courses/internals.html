@@ -37,7 +37,7 @@
   <div style="overflow-x:auto;">
   <table class="erp-table">
     <thead>
-      <tr><th>#</th><th>Academic Year</th><th>Semester</th><th>Course Code</th><th>Course Name</th><th>Evaluation Components</th></tr>
+      <tr><th>#</th><th>Academic Year</th><th>Semester</th><th>Course Code</th><th>Course Name</th><th>Internal Marks</th><th>Evaluation Components</th></tr>
     </thead>
     <tbody>
       {% for c in courses %}
@@ -47,19 +47,20 @@
         <td>{{ selected_sem }}</td>
         <td><span class="badge-code">{{ c.course_code }}</span></td>
         <td>{{ c.course_desc }}</td>
+        <td style="text-align:center;font-weight:800;">{{ c.internal_marks|floatformat:1 }}</td>
         <td>
           {% if c.credits == 4 %}
-            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code }}','{{ c.course_desc }}','Lab In sem-II'); return false;">Lab In sem-II</a>
-            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code }}','{{ c.course_desc }}','Lab In sem-I'); return false;">Lab In sem-I</a>
-            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code }}','{{ c.course_desc }}','MOOCs Review'); return false;">MOOCs Review</a>
-            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code }}','{{ c.course_desc }}','ALM'); return false;">ALM</a>
-            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code }}','{{ c.course_desc }}','Continuous Evaluation - Lab Exercise'); return false;">Continuous Evaluation - Lab Exercise</a>
+            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code|escapejs }}','{{ c.course_desc|escapejs }}','Lab In sem-II',{{ c.internal_marks }},{{ c.external_marks }},{{ c.total_marks }}); return false;">Lab In sem-II</a>
+            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code|escapejs }}','{{ c.course_desc|escapejs }}','Lab In sem-I',{{ c.internal_marks }},{{ c.external_marks }},{{ c.total_marks }}); return false;">Lab In sem-I</a>
+            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code|escapejs }}','{{ c.course_desc|escapejs }}','MOOCs Review',{{ c.internal_marks }},{{ c.external_marks }},{{ c.total_marks }}); return false;">MOOCs Review</a>
+            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code|escapejs }}','{{ c.course_desc|escapejs }}','ALM',{{ c.internal_marks }},{{ c.external_marks }},{{ c.total_marks }}); return false;">ALM</a>
+            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code|escapejs }}','{{ c.course_desc|escapejs }}','Continuous Evaluation - Lab Exercise',{{ c.internal_marks }},{{ c.external_marks }},{{ c.total_marks }}); return false;">Continuous Evaluation - Lab Exercise</a>
           {% else %}
-            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code }}','{{ c.course_desc }}','Semester in Exam-II'); return false;">Semester in Exam-II</a>
-            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code }}','{{ c.course_desc }}','Semester in Exam-I'); return false;">Semester in Exam-I</a>
-            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code }}','{{ c.course_desc }}','Tutorial'); return false;">Tutorial</a>
-            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code }}','{{ c.course_desc }}','Home Assignment and Textbook'); return false;">Home Assignment and Textbook</a>
-            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code }}','{{ c.course_desc }}','ALM'); return false;">ALM</a>
+            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code|escapejs }}','{{ c.course_desc|escapejs }}','Semester in Exam-II',{{ c.internal_marks }},{{ c.external_marks }},{{ c.total_marks }}); return false;">Semester in Exam-II</a>
+            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code|escapejs }}','{{ c.course_desc|escapejs }}','Semester in Exam-I',{{ c.internal_marks }},{{ c.external_marks }},{{ c.total_marks }}); return false;">Semester in Exam-I</a>
+            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code|escapejs }}','{{ c.course_desc|escapejs }}','Tutorial',{{ c.internal_marks }},{{ c.external_marks }},{{ c.total_marks }}); return false;">Tutorial</a>
+            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code|escapejs }}','{{ c.course_desc|escapejs }}','Home Assignment and Textbook',{{ c.internal_marks }},{{ c.external_marks }},{{ c.total_marks }}); return false;">Home Assignment and Textbook</a>
+            <a href="#" class="eval-link" onclick="openModal('{{ c.course_code|escapejs }}','{{ c.course_desc|escapejs }}','ALM',{{ c.internal_marks }},{{ c.external_marks }},{{ c.total_marks }}); return false;">ALM</a>
           {% endif %}
         </td>
       </tr>
@@ -107,98 +108,29 @@
 // Seeded marks data per component type
 const STUDENT_ID = '{{ student.roll_number|default:"2400030008" }}';
 
-function randInt(min, max) {
-  // deterministic-ish based on string seed
-  return min + Math.floor(Math.random() * (max - min + 1));
+function getMarksData(courseCode, courseDesc, compType, internalMarks, externalMarks, totalMarks) {
+  const maxMarksByComponent = {
+    'Semester in Exam-I': 30, 'Semester in Exam-II': 30,
+    'Tutorial': 10, 'Home Assignment and Textbook': 10, 'ALM': 10,
+    'Lab In sem-I': 25, 'Lab In sem-II': 25,
+    'MOOCs Review': 15, 'Continuous Evaluation - Lab Exercise': 15,
+  };
+  const maxMarks = maxMarksByComponent[compType] || 50;
+  const formattedInternal = Number(internalMarks || 0).toFixed(1);
+  const formattedExternal = Number(externalMarks || 0).toFixed(1);
+  const formattedTotal = Number(totalMarks || 0).toFixed(1);
+
+  return {
+    headers: ['Sno','Coursecode','Coursedesc','Component','Student Uniid','Internal Marks','Max Marks','External Marks','Total Marks'],
+    rows: [[1, courseCode, courseDesc, compType, STUDENT_ID, formattedInternal, maxMarks, formattedExternal, formattedTotal]]
+  };
 }
 
-function seededRand(seed, min, max) {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
-  return min + Math.abs(h) % (max - min + 1);
-}
-
-function getMarksData(courseCode, compType) {
-  const seed = courseCode + compType;
-
-  if (compType === 'Semester in Exam-I' || compType === 'Semester in Exam-II') {
-    // Question-paper-wise marks like real ERP
-    const qps = ['1 B','1 C','1 D','1 E','1 F','1 A','5 A','5 B','6 A','6 B','3 A','3 B','4 A','4 B','2 D','2 C','2 B','2 A'];
-    const maxM = 50;
-    const marks = qps.map((q,i) => seededRand(seed+q+i, -2, 5));
-    return {
-      headers: ['Sno','Coursecode','Coursedesc','Remarks','Student Uniid', ...qps, 'Max M'],
-      rows: [[1, courseCode, compType.replace('Semester in ',''), '', STUDENT_ID, ...marks, maxM]]
-    };
-  }
-
-  if (compType === 'Lab In sem-I' || compType === 'Lab In sem-II') {
-    const exps = ['Exp 1','Exp 2','Exp 3','Exp 4','Exp 5','Exp 6','Exp 7','Exp 8','Exp 9','Exp 10'];
-    const marks = exps.map((e,i) => seededRand(seed+e+i, 6, 10));
-    const total = marks.reduce((a,b) => a+b, 0);
-    return {
-      headers: ['Sno','Coursecode','Coursedesc','Student Uniid', ...exps, 'Total', 'Max'],
-      rows: [[1, courseCode, compType, STUDENT_ID, ...marks, total, 100]]
-    };
-  }
-
-  if (compType === 'MOOCs Review') {
-    return {
-      headers: ['Sno','Coursecode','Coursedesc','Student Uniid','Platform','Course Name','Score','Max'],
-      rows: [[1, courseCode, 'MOOCs', STUDENT_ID, 'NPTEL', 'Online Certification', seededRand(seed, 70, 100), 100]]
-    };
-  }
-
-  if (compType === 'ALM') {
-    const weeks = ['W1','W2','W3','W4','W5','W6','W7','W8'];
-    const marks = weeks.map((w,i) => seededRand(seed+w+i, 0, 5));
-    const total = marks.reduce((a,b) => a+b, 0);
-    return {
-      headers: ['Sno','Coursecode','Coursedesc','Student Uniid', ...weeks, 'Total', 'Max'],
-      rows: [[1, courseCode, 'ALM', STUDENT_ID, ...marks, total, 40]]
-    };
-  }
-
-  if (compType === 'Tutorial') {
-    return {
-      headers: ['Sno','Coursecode','Coursedesc','Student Uniid','T1','T2','T3','T4','T5','Total','Max'],
-      rows: [[1, courseCode, 'Tutorial', STUDENT_ID,
-        seededRand(seed+'T1',5,10), seededRand(seed+'T2',5,10),
-        seededRand(seed+'T3',5,10), seededRand(seed+'T4',5,10),
-        seededRand(seed+'T5',5,10),
-        seededRand(seed+'tot',35,50), 50]]
-    };
-  }
-
-  if (compType === 'Home Assignment and Textbook') {
-    return {
-      headers: ['Sno','Coursecode','Coursedesc','Student Uniid','A1','A2','A3','TB Quiz','Total','Max'],
-      rows: [[1, courseCode, 'HW+TB', STUDENT_ID,
-        seededRand(seed+'A1',7,10), seededRand(seed+'A2',7,10),
-        seededRand(seed+'A3',7,10), seededRand(seed+'TB',7,10),
-        seededRand(seed+'tot',28,40), 40]]
-    };
-  }
-
-  if (compType === 'Continuous Evaluation - Lab Exercise') {
-    return {
-      headers: ['Sno','Coursecode','Coursedesc','Student Uniid','CE1','CE2','CE3','CE4','CE5','CE6','Total','Max'],
-      rows: [[1, courseCode, 'CE Lab', STUDENT_ID,
-        seededRand(seed+'CE1',6,10), seededRand(seed+'CE2',6,10),
-        seededRand(seed+'CE3',6,10), seededRand(seed+'CE4',6,10),
-        seededRand(seed+'CE5',6,10), seededRand(seed+'CE6',6,10),
-        seededRand(seed+'tot',40,60), 60]]
-    };
-  }
-
-  return { headers: ['Sno','Coursecode','Details'], rows: [[1, courseCode, 'No data available']] };
-}
-
-function openModal(courseCode, courseDesc, compType) {
+function openModal(courseCode, courseDesc, compType, internalMarks, externalMarks, totalMarks) {
   document.getElementById('modalTitle').textContent = 'Student ' + compType + ' Qp Wise Marks';
   document.getElementById('modalSubtitle').textContent = 'Total 1 item.';
 
-  const data = getMarksData(courseCode, compType);
+  const data = getMarksData(courseCode, courseDesc, compType, internalMarks, externalMarks, totalMarks);
 
   const head = document.getElementById('marksHead');
   head.innerHTML = '<tr>' + data.headers.map(h => '<th>' + h + '</th>').join('') + '</tr>';

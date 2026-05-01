@@ -111,7 +111,37 @@
       color:var(--text);
       padding:5px 12px 5px 6px;
       font-weight:800;
+      cursor:pointer;
+      min-height:46px;
     }
+    .user-menu-wrap{position:relative;}
+    .user-menu{
+      display:none;
+      position:absolute;
+      right:0;
+      top:calc(100% + 8px);
+      width:190px;
+      background:var(--panel);
+      border:1px solid var(--panel-line);
+      border-radius:9px;
+      box-shadow:var(--shadow);
+      padding:7px;
+      z-index:1200;
+    }
+    .user-menu.open{display:block;}
+    .user-menu a{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-height:40px;
+      color:#d5c8b2;
+      border-radius:8px;
+      padding:9px 11px;
+      font-size:.9rem;
+      font-weight:800;
+    }
+    .user-menu a:hover{background:#263244;color:#fff;}
+    .user-menu .logout-link{color:#ffd8d2;}
     .avatar{
       width:34px;
       height:34px;
@@ -488,10 +518,16 @@
   </div>
   <div class="nav-right">
     <button class="icon-btn" type="button" aria-label="Notifications"><i class="far fa-bell"></i></button>
-    <div class="user-chip">
-      <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
-      <span>{{ user.get_full_name|default:user.username|slice:":14" }}</span>
-      <i class="fas fa-chevron-down" style="font-size:.7rem;color:var(--muted);"></i>
+    <div class="user-menu-wrap">
+      <button class="user-chip" type="button" onclick="toggleUserMenu(event)" aria-haspopup="true" aria-expanded="false" id="userMenuButton">
+        <div class="avatar">{{ user.username|slice:":1"|upper }}</div>
+        <span>{{ user.get_full_name|default:user.username|slice:":14" }}</span>
+        <i class="fas fa-chevron-down" style="font-size:.7rem;color:var(--muted);"></i>
+      </button>
+      <div class="user-menu" id="userMenu">
+        <a href="{% url 'profile' %}"><i class="far fa-user"></i> Profile</a>
+        <a class="logout-link" href="{% url 'logout' %}"><i class="fas fa-right-from-bracket"></i> Logout</a>
+      </div>
     </div>
   </div>
 </nav>
@@ -526,19 +562,13 @@
     <i class="far fa-calendar-days"></i> Timetable
   </a>
   {% endif %}
-  {% if user.is_staff or user.is_superuser %}
+  {% if user.is_staff or user.is_superuser or user.role == 'teacher' or user.role == 'admin' or user.role == 'administrator' %}
   <div class="section-sep">HR & Faculty</div>
   <a href="{% url 'student_list' %}" class="nav-link-item {% if request.resolver_match.url_name == 'student_list' %}active{% endif %}">
     <i class="fas fa-users"></i> Students
   </a>
-  <a href="{% url 'student_crud' %}" class="nav-link-item {% if request.resolver_match.url_name == 'student_crud' %}active{% endif %}">
-    <i class="fas fa-user-gear"></i> Student CRUD
-  </a>
   <a href="{% url 'update_internals' %}" class="nav-link-item {% if request.resolver_match.url_name == 'update_internals' %}active{% endif %}">
-    <i class="fas fa-pen-to-square"></i> Faculty Internals
-  </a>
-  <a href="/admin/" class="nav-link-item">
-    <i class="far fa-building"></i> Admin Panel
+    <i class="fas fa-pen-to-square"></i> Student Internals
   </a>
   {% endif %}
   <div class="section-sep">Account</div>
@@ -571,6 +601,21 @@ function toggleMenu(id,el){
   m.classList.toggle('open');
   el.classList.toggle('open');
 }
+function toggleUserMenu(event){
+  event.stopPropagation();
+  var menu=document.getElementById('userMenu');
+  var button=document.getElementById('userMenuButton');
+  var isOpen=menu.classList.toggle('open');
+  button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+document.addEventListener('click', function(){
+  var menu=document.getElementById('userMenu');
+  var button=document.getElementById('userMenuButton');
+  if(menu && menu.classList.contains('open')){
+    menu.classList.remove('open');
+    button.setAttribute('aria-expanded','false');
+  }
+});
 function goToInternals(){
   var roll = document.getElementById('rollInput').value.trim();
   if(roll) window.location='/internals/update/?roll='+roll;

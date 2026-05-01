@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Profile - Educational ERP{% endblock %}
+{% block content %}
+<div class="page-header">Profile</div>
+
+<div class="data-table-wrap" style="max-width:920px;">
+  <div class="tbl-header">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="avatar" style="width:54px;height:54px;font-size:1.25rem;">{{ profile_user.username|slice:":1"|upper }}</div>
+      <div>
+        <div class="tbl-title">{{ profile_user.get_full_name|default:profile_user.username }}</div>
+        <div class="total-badge">{{ profile_user.get_role_display|default:profile_user.role }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:22px;">
+    <div class="profile-grid">
+      <div class="profile-item">
+        <span>Username</span>
+        <strong>{{ profile_user.username }}</strong>
+      </div>
+      <div class="profile-item">
+        <span>Email</span>
+        <strong>{{ profile_user.email|default:"Not provided" }}</strong>
+      </div>
+      <div class="profile-item">
+        <span>First Name</span>
+        <strong>{{ profile_user.first_name|default:"Not provided" }}</strong>
+      </div>
+      <div class="profile-item">
+        <span>Last Name</span>
+        <strong>{{ profile_user.last_name|default:"Not provided" }}</strong>
+      </div>
+      <div class="profile-item">
+        <span>Phone</span>
+        <strong>{{ profile_user.phone|default:"Not provided" }}</strong>
+      </div>
+      <div class="profile-item">
+        <span>Role</span>
+        <strong>{{ profile_user.get_role_display|default:profile_user.role }}</strong>
+      </div>
+
+      {% if student %}
+      <div class="profile-item">
+        <span>Roll Number</span>
+        <strong>{{ student.roll_number }}</strong>
+      </div>
+      <div class="profile-item">
+        <span>Registration Number</span>
+        <strong>{{ student.registration_number }}</strong>
+      </div>
+      <div class="profile-item">
+        <span>Department</span>
+        <strong>{{ student.department|default:"Not provided" }}</strong>
+      </div>
+      <div class="profile-item">
+        <span>Year</span>
+        <strong>{{ student.year }}</strong>
+      </div>
+      <div class="profile-item">
+        <span>Semester</span>
+        <strong>{{ student.semester }}</strong>
+      </div>
+      <div class="profile-item">
+        <span>Date of Birth</span>
+        <strong>{{ student.date_of_birth|date:"d M Y" }}</strong>
+      </div>
+      <div class="profile-item full">
+        <span>Address</span>
+        <strong>{{ student.address|default:"Not provided" }}</strong>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+.profile-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+.profile-item{
+  background:#202427;
+  border:1px solid var(--panel-line);
+  border-radius:9px;
+  padding:15px 16px;
+  min-width:0;
+}
+.profile-item.full{grid-column:1 / -1;}
+.profile-item span{
+  display:block;
+  color:var(--muted);
+  font-size:.74rem;
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+.profile-item strong{
+  color:var(--text);
+  font-size:.98rem;
+  overflow-wrap:anywhere;
+}
+@media (max-width:680px){
+  .profile-grid{grid-template-columns:1fr;}
+}
+</style>
+{% endblock %}

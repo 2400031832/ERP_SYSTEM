@@ -135,12 +135,45 @@
       font-size:.98rem;
     }
     .secondary-link:hover{color:#fff;}
+    .signup-toggle{
+      width:100%;
+      min-height:48px;
+      border:1px solid var(--field-line);
+      border-radius:9px;
+      background:transparent;
+      color:#d5c8b2;
+      font:inherit;
+      font-size:1.05rem;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:20px;
+      transition:border-color .18s,color .18s,background .18s;
+    }
+    .signup-toggle:hover{
+      border-color:#63707b;
+      color:#fff;
+      background:#202427;
+    }
+    .signup-role-grid{
+      display:none;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin-top:10px;
+    }
+    .signup-role-grid.open{display:grid;}
+    .signup-role-grid .secondary-link{
+      margin-top:0;
+      border:1px solid var(--field-line);
+      border-radius:9px;
+      padding:11px 12px;
+    }
     @media (max-width:560px){
       body{align-items:flex-start;padding-top:58px;}
       .login-card{padding:32px 22px 26px;border-radius:14px;}
       .login-title{font-size:2rem;}
       .login-subtitle{font-size:1rem;}
       .role-grid{grid-template-columns:1fr;}
+      .signup-role-grid{grid-template-columns:1fr;}
       .role-btn{height:49px;font-size:1.05rem;}
     }
   </style>
@@ -178,13 +211,23 @@
       </div>
 
       <button class="submit-btn" type="submit" id="submitBtn">Sign In as Student</button>
-      <a class="secondary-link" href="{% url 'register' %}">Parent Registration</a>
+      <div style="margin-top:20px;text-align:center;">
+        <button class="signup-toggle" type="button" id="signupToggle">Sign Up</button>
+        <div class="signup-role-grid" id="signupRoleGrid">
+          <a class="secondary-link" href="{% url 'register' %}?role=student">Student Sign Up</a>
+          <a class="secondary-link" href="{% url 'register' %}?role=faculty">Faculty Sign Up</a>
+          <a class="secondary-link" href="{% url 'register' %}?role=admin">Admin Sign Up</a>
+          <a class="secondary-link" href="{% url 'register' %}?role=administrator">Administrator Sign Up</a>
+        </div>
+      </div>
     </form>
   </main>
 
   <script>
     const roleInput = document.getElementById('selectedRole');
     const submitBtn = document.getElementById('submitBtn');
+    const signupToggle = document.getElementById('signupToggle');
+    const signupRoleGrid = document.getElementById('signupRoleGrid');
 
     document.querySelectorAll('.role-btn').forEach((button) => {
       button.addEventListener('click', () => {
@@ -193,6 +236,10 @@
         roleInput.value = button.dataset.role;
         submitBtn.textContent = `Sign In as ${button.dataset.role}`;
       });
+    });
+
+    signupToggle.addEventListener('click', () => {
+      signupRoleGrid.classList.toggle('open');
     });
   </script>
 </body>
